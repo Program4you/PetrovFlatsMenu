@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+// описание структуры
 typedef struct flat_t {
 	char address[19];
 	double price;
@@ -12,14 +13,18 @@ typedef struct flat_t {
 	char patronymic[14];
 } flat_t;
 
+// добавлеине в базу новой квартиры
 void add_flat(flat_t **flats, int *n, int *capacity) {
-	if (*flats == NULL)
-		*flats = (flat_t *)malloc(sizeof(flat_t));
+	if (*flats == NULL) {
+		*flats = (flat_t *)malloc(sizeof(flat_t)); // если квартир ещё не было, то создаём 1 квартиру
+		*capacity = 1;
+	}
 	else if (*n + 1 >= *capacity) {
 		*capacity *= 2;
-		*flats = (flat_t *)realloc(*flats, *capacity * sizeof(flat_t));
+		*flats = (flat_t *)realloc(*flats, *capacity * sizeof(flat_t)); // иначе увеличиваем максимальный размер базы в два раза, если новая запись не вмещается
 	}
 
+	// вводим новую запись
 	printf("Enter address: ");
 	scanf("%s", (*flats)[*n].address);
 	printf("Enter price: ");
@@ -33,16 +38,17 @@ void add_flat(flat_t **flats, int *n, int *capacity) {
 	printf("Enter patronymic: ");
 	scanf("%s", (*flats)[*n].patronymic);
 
-	(*n)++;
+	(*n)++; // увеличиваем число элементов в массиве
 }
 
+// удаление квартиры из базы
 void remove_flat(flat_t *flats, int *n) {
 	if (!*n) {
 		printf("No flats was added!\n");
 		return;
 	}
 
-	flat_t flat;
+	flat_t flat; // создаём квартиру для поиска и удаления
 
 	printf("Enter address: ");
 	scanf("%s", flat.address);
@@ -56,31 +62,34 @@ void remove_flat(flat_t *flats, int *n) {
 	scanf("%s", flat.name);
 	printf("Enter patronymic: ");
 	scanf("%s", flat.patronymic);
-	int count = 0;
+	int count = 0; // количество найденных квартир
 
 	for (int i = 0; i < *n; i++) {
 		if (!strcmp(flat.address, flats[i].address) && flat.price == flats[i].price && flat.rooms == flats[i].rooms &&
-			!strcmp(flat.surname, flats[i].surname) && !strcmp(flat.name, flats[i].name) && !strcmp(flat.patronymic, flats[i].patronymic)) {
-			(*n)--;
-			count++;
+			!strcmp(flat.surname, flats[i].surname) && !strcmp(flat.name, flats[i].name) && !strcmp(flat.patronymic, flats[i].patronymic)) { // если нашли квартиру в базе
+			(*n)--; // уменьшаем число квартир в базе
+			count++; // количество удалённых
 
 			for (int j = i; j < *n; j++)
-				flats[j] = flats[j + 1];
+				flats[j] = flats[j + 1]; // сдвигаем элементы влево на 1
 		}
 	}
 
-	if (!count)
+	// выводим нужное сообщение
+	if (count == 0)
 		printf("No flats found in database...\n");
 	else
 		printf("Removed\n");
 }
 
+// вывод базы, отсортированной по адресу по алфавиту
 void print_by_address(flat_t *flats, int n) {
 	if (!n) {
 		printf("No flats was added!\n");
 		return;
 	}
 	
+	// сортировка
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n - 1 - i; j++) {
 			if (strcmp(flats[j].address, flats[j + 1].address) > 0) {
@@ -104,12 +113,14 @@ void print_by_address(flat_t *flats, int n) {
 	printf("+-------------------+-------+-------+----------------+----------------+----------------+\n");
 }
 
+// вывод базы отсортированной по цене по убыванию
 void print_by_price(flat_t *flats, int n) {
 	if (!n) {
 		printf("No flats was added!\n");
 		return;
 	}
 
+	// сортировка
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n - 1 - i; j++) {
 			if (flats[j].price < flats[j + 1].price) {
@@ -133,6 +144,7 @@ void print_by_price(flat_t *flats, int n) {
 	printf("+-------------------+-------+-------+----------------+----------------+----------------+\n");
 }
 
+// поиск по имени
 void find_by_name(flat_t *flats, int n) {
 	if (!n) {
 		printf("No flats was added!\n");
@@ -141,8 +153,8 @@ void find_by_name(flat_t *flats, int n) {
 
 	char name[14];
 	printf("Enter part of name: ");
-	scanf("%s", name);
-	int count = 0;
+	scanf("%s", name); // вводим имя (или его часть)
+	int count = 0; // число найденных
 
 	printf("\n\n");
 	printf("+--------------------------------------------------------------------------------------+\n");
@@ -152,13 +164,13 @@ void find_by_name(flat_t *flats, int n) {
 	printf("+-------------------+-------+-------+----------------+----------------+----------------+\n");
 
 	for (int i = 0; i < n; i++) {
-		if (strstr(flats[i].name, name)) {
+		if (strstr(flats[i].name, name)) { // если такая подстрока есть в имени
 			printf("| %17s | %5.2lf | %5d | %14s | %14s | %14s |\n", flats[i].address, flats[i].price, flats[i].rooms, flats[i].surname, flats[i].name, flats[i].patronymic);
-			count++;
+			count++; // то выводим квартиру и увеличиваем счётчик выведенных
 		}
 	}
 
-	if (!count)
+	if (count == 0) // если ничего не нашли, выводим сообщение об этом
 		printf("|                                    No flats found                                    |\n");
 
 	printf("+-------------------+-------+-------+----------------+----------------+----------------+\n");
